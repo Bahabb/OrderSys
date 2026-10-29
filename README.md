@@ -64,11 +64,10 @@ PostgreSQL (Persistent source of truth)
 
 | Decision | Choice | Reasoning |
 |----------|--------|-----------|
-
-| **Load balancing** | *Round-robin* | **WHY?** Stateless, predictable distribution. Replicas are identical, so even distribution is optimal.
-| **Number of replicas** | *2* | **WHY?** Minimum for meaningful fault tolerance. If one fails, the other serves 100% of traffic. |
-| **Cache placement** | *Between FastAPI and database* | **WHY?** Intercepts repeated queries after validation. Avoids caching errors or malformed requests. |
-| **Cache invalidation** | *TTL-based (30 seconds)* | **WHY?** Simplicity over strict consistency. Acceptable for read-heavy order lookups; payment/inventory would require stricter guarantees. |
-| **Data persistence** | *PostgreSQL* | **WHY?** Durability across restarts. Relational schema enforces data integrity. |
+| Load balancing | Round-robin | Stateless, predictable distribution. Replicas are identical, so even distribution is optimal. |
+| Number of replicas | 2 | Minimum for meaningful fault tolerance. If one fails, the other serves 100% of traffic. |
+| Cache placement | Between FastAPI and database | Intercepts repeated queries after validation. Avoids caching errors or malformed requests. |
+| Cache invalidation | TTL-based (30 seconds) | Simplicity over strict consistency. Acceptable for read-heavy order lookups; payment/inventory would require stricter guarantees. |
+| Data persistence | PostgreSQL | Durability across restarts. Relational schema enforces data integrity. |
 
 ## Performance Results
