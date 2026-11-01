@@ -87,8 +87,11 @@
 
 **Error Responses:**
 - 404 Not Found: Order with given ID does not exist
-- 400 Bad Request: ID is not a valid integer
-- 500 Internal Server Error: Database connection failure or cache connection failure
+- 422 Bad Request: ID is not a valid integer
+- 500 Internal Server Error: Database connection failure
+
+**If cache is down:**
+- Skip the cache lookup and query PostgreSQL. Skip the cache write. Return 500 only if PostgreSQL also fails.
 
 ---
 
@@ -173,12 +176,12 @@ CREATE TABLE orders (
 |-------------|----------|---------|
 | 201 Created | POST request succeeds | Order created and returned with auto-generated ID |
 | 200 OK | GET request succeeds | Order(s) returned successfully |
-| 400 Bad Request | Invalid input or malformed request | Missing required field, quantity ≤ 0, ID is not a number |
+| 422 Bad Request | Invalid input or malformed request | Missing required field, quantity ≤ 0, ID is not a number |
 | 404 Not Found | Resource doesn't exist | GET /orders/999 when order 999 doesn't exist |
 | 500 Internal Server Error | Server-side failure | Database connection lost, Redis connection lost, unexpected exception |
 
 **Implementation Notes:**
-- All errors return JSON with descriptive message: `{"error": "msg"}`
+- All errors return JSON with descriptive message: `{"detail": "msg"}` (follows HTTPException FastAPI response to skip making a custom    handler)
 - 500 errors are logged to aid debugging
 - 4xx errors are client's responsibility to fix
 - Timeouts on DB/Redis queries should return 500, not hang indefinitely
@@ -194,7 +197,7 @@ CREATE TABLE orders (
 
 **Redis Connections:**
 - FastAPI instances maintain a persistent connection to Redis
-- Connection errors (Redis down) return 500 to client
+- Skip the cache lookup and query PostgreSQL. Skip the cache write. Return 500 only if PostgreSQL also fails.
 
 **Load Balancer:**
 - Nginx has no persistent connection to FastAPI (communication over HTTP)
