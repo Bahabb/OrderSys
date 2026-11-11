@@ -1,0 +1,43 @@
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - api-1
+      - api-2
+
+  api-1:
+    build: .
+    environment:
+      - DATABASE_URL=postgresql://orders_user:orders_pass@postgres:5432/orders_db
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+
+  api-2:
+    build: .
+    environment:
+      - DATABASE_URL=postgresql://orders_user:orders_pass@postgres:5432/orders_db
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=orders_user
+      - POSTGRES_PASSWORD=orders_pass
+      - POSTGRES_DB=orders_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+
+volumes:
+  pgdata:
